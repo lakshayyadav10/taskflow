@@ -9,24 +9,16 @@ import app from './app.js';
 const PORT = process.env.PORT || 8080;
 
 async function start() {
-  await connectDB();
-  app.listen(PORT, () => {
-    console.log(`✅  Server running → http://localhost:${PORT}`);
-    console.log(`📋  API docs      → http://localhost:${PORT}/api-docs`);
-  });
+  try {
+    await connectDB();
+
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  }
 }
 
-start().catch((err) => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
-
-const cors = require('cors');
-
-app.use(cors({
-  origin: [
-    'http://localhost:5173',                          // local dev
-    'sweet-joy-production-4231.up.railway.app'        // your Railway frontend URL
-  ],
-  credentials: true
-}));
+start();
