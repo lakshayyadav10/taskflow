@@ -53,4 +53,14 @@ app.use((err, _req, res, _next) => {
   res.status(status).json({ error: message });
 });
 
+
+import cors from 'cors';
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_ORIGIN,
+    credentials: true,
+  })
+);
+
 export default app;
