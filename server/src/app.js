@@ -11,7 +11,7 @@ import { adminRoutes } from './modules/admin/admin.routes.js';
 const app = express();
 
 /* ─────────────────────────────────────────────────────────────
-   Middleware
+   CORS CONFIGURATION
 ───────────────────────────────────────────────────────────── */
 
 app.use(
@@ -20,26 +20,32 @@ app.use(
       'http://localhost:5173',
       'https://sweet-joy-production-4231.up.railway.app',
     ],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   })
 );
+
+/* ─────────────────────────────────────────────────────────────
+   MIDDLEWARE
+───────────────────────────────────────────────────────────── */
 
 app.use(express.json());
 app.use(morgan('dev'));
 
 /* ─────────────────────────────────────────────────────────────
-   Health Check
+   HEALTH CHECK
 ───────────────────────────────────────────────────────────── */
 
 app.get('/api/health', (_req, res) => {
   res.json({
-    status: 'ok',
+    success: true,
+    message: 'Backend is running',
     timestamp: new Date(),
   });
 });
 
 /* ─────────────────────────────────────────────────────────────
-   API Routes
+   API ROUTES
 ───────────────────────────────────────────────────────────── */
 
 app.use('/api/v1/auth', authRoutes);
@@ -53,7 +59,7 @@ app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/admin', adminRoutes);
 
 /* ─────────────────────────────────────────────────────────────
-   API Docs
+   API DOCS
 ───────────────────────────────────────────────────────────── */
 
 app.get('/api-docs', (_req, res) => {
@@ -64,7 +70,7 @@ app.get('/api-docs', (_req, res) => {
         <title>Task Manager API</title>
 
         <style>
-          body{
+          body {
             font-family: Arial;
             max-width: 900px;
             margin: 40px auto;
@@ -73,11 +79,11 @@ app.get('/api-docs', (_req, res) => {
             color: white;
           }
 
-          h1{
+          h1 {
             color: #60a5fa;
           }
 
-          pre{
+          pre {
             background: #1e293b;
             padding: 15px;
             border-radius: 10px;
@@ -133,7 +139,7 @@ GET /dashboard
 });
 
 /* ─────────────────────────────────────────────────────────────
-   Error Handler
+   ERROR HANDLER
 ───────────────────────────────────────────────────────────── */
 
 app.use((err, _req, res, _next) => {
