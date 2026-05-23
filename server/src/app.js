@@ -10,12 +10,8 @@ import { adminRoutes } from './modules/admin/admin.routes.js';
 
 const app = express();
 
-/* ─────────────────────────────────────────────────────────────
-   CORS CONFIGURATION
-───────────────────────────────────────────────────────────── */
-
-
-app.use(cors({
+/* ─── CORS ─── */
+const corsOptions = {
   origin: [
     "http://localhost:5173",
     "https://sweet-joy-production-4231.up.railway.app"
@@ -23,12 +19,16 @@ app.use(cors({
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
-}));
+};
 
-app.options("*", cors());
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // ← same config, not cors()
 
-app.use(express.json());
-// ... rest of your routes below
+/* ─── MIDDLEWARE ─── */
+app.use(express.json());  // ← only once
+app.use(morgan('dev'));
+
+// ... rest of your file stays exactly the same
 
 /* ─────────────────────────────────────────────────────────────
    MIDDLEWARE
