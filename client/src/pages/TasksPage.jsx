@@ -66,11 +66,24 @@ export function TasksPage({ token, user }) {
     setBusy(true);
     try {
       const body = { ...form };
-      if (!body.dueDate) delete body.dueDate;
+
+      // FIX 1: Convert "YYYY-MM-DD" → full ISO string Zod expects
+      if (!body.dueDate) {
+        delete body.dueDate;
+      } else {
+        body.dueDate = new Date(body.dueDate).toISOString();
+      }
+
+      // FIX 2: Remove empty assignedTo so backend doesn't get an empty string
       if (!body.assignedTo) delete body.assignedTo;
+
+      // FIX 3: Remove empty description so it doesn't fail optional field validation
+      if (!body.description) delete body.description;
+
       const url = editing
         ? `/v1/projects/${selProject._id}/tasks/${editing._id}`
         : `/v1/projects/${selProject._id}/tasks`;
+
       await api(url, { method: editing ? "PUT" : "POST", body: JSON.stringify(body) }, token);
       toast(editing ? "Task updated!" : "Task created!", "success");
       setForm(EMPTY_FORM);
@@ -106,6 +119,7 @@ export function TasksPage({ token, user }) {
       description: task.description || "",
       priority: task.priority,
       status: task.status,
+      // FIX 4: slice to YYYY-MM-DD for the date input field
       dueDate: task.dueDate ? task.dueDate.slice(0, 10) : "",
       assignedTo: task.assignedTo?._id || task.assignedTo || "",
     });
@@ -184,7 +198,12 @@ export function TasksPage({ token, user }) {
                 <option value="in_progress">In Progress</option>
                 <option value="done">Done</option>
               </SelectInput>
-              <TextInput label="Due Date" type="date" value={form.dueDate} onChange={F("dueDate")} />
+              {/* FIX 5: required so user can't submit without a date */}
+              <TextInput
+                label="Due Date" type="date"
+                value={form.dueDate} onChange={F("dueDate")}
+                required
+              />
             </div>
             {selProject?.members?.length > 0 && (
               <SelectInput label="Assign To" value={form.assignedTo} onChange={F("assignedTo")}>

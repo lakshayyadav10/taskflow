@@ -220,7 +220,7 @@ npm run dev
 ### Auth
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| POST | `/api/v1/auth/register` | Public | Create account |
+| POST | `/api` | Public | Create account |
 | POST | `/api/v1/auth/login` | Public | Login, returns JWT |
 
 ### Projects

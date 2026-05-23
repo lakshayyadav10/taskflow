@@ -16,7 +16,7 @@ export function AuthPage({ onAuth }) {
     e.preventDefault();
     setBusy(true);
     try {
-      const path = tab === "login" ? "/api/v1/auth/login" : "/api/v1/auth/register";
+      const path = tab === "login" ? "/v1/auth/login" : "/v1/auth/register";
       const body = tab === "login"
         ? { email: form.email, password: form.password }
         : form;
