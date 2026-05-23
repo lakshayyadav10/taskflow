@@ -14,7 +14,6 @@ const app = express();
    CORS CONFIGURATION
 ───────────────────────────────────────────────────────────── */
 
-const cors = require("cors");
 
 app.use(cors({
   origin: [
