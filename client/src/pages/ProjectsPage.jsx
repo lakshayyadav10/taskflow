@@ -10,24 +10,15 @@ import { Avatar } from "../components/ui/Avatar";
 import { TextInput } from "../components/ui/FormFields";
 import { PagePad, PageCenter, PageHeader, SectionLabel } from "../components/layout/PageLayout";
 
-/* ── Helper: resolves a member's user id regardless of shape ── */
-function memberId(m) {
-  return m.user?._id || m.user;
-}
-function userId(user) {
-  return user?.id || user?._id;
-}
-
 /* ── Project detail panel ── */
-function ProjectDetail({ detail, setDetail, isGlobalAdmin, allUsers, token, load }) {
+function ProjectDetail({ detail, setDetail, allUsers, token, load, user }) {
   const [addId, setAddId] = useState("");
 
-  const isProjAdmin = detail.members?.find(
-    (m) => memberId(m) === userId(detail._currentUser)
-  )?.role === "admin";
+  // FIX: use global user.role instead of broken member lookup
+  const isProjAdmin = user?.role === "admin";
 
   const nonMembers = allUsers.filter(
-    (u) => !detail.members?.some((m) => memberId(m) === u._id)
+    (u) => !detail.members?.some((m) => (m.user?._id || m.user) === u._id)
   );
 
   async function addMember() {
@@ -158,10 +149,9 @@ export function ProjectsPage({ token, user }) {
     finally { setBusy(false); }
   }
 
-  function myRole(proj) {
-    return proj.members?.find(
-      (m) => (m.user?._id || m.user) === (user?.id || user?._id)
-    )?.role;
+  // FIX: use global user.role for badge display
+  function myRole() {
+    return user?.role;
   }
 
   if (loading) return <PageCenter><Spinner size={30} /></PageCenter>;
@@ -175,6 +165,7 @@ export function ProjectsPage({ token, user }) {
         allUsers={allUsers}
         token={token}
         load={load}
+        user={user}     // FIX: pass user down to ProjectDetail
       />
     );
   }
@@ -227,7 +218,8 @@ export function ProjectsPage({ token, user }) {
                   background: "linear-gradient(135deg,#5b7cfa,#9b7fd4)",
                   display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
                 }}>⬡</div>
-                <Badge color={myRole(p) === "admin" ? "blue" : "dim"}>{myRole(p)}</Badge>
+                {/* FIX: myRole() with no argument */}
+                <Badge color={myRole() === "admin" ? "blue" : "dim"}>{myRole()}</Badge>
               </div>
               <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{p.name}</div>
               {p.description && (

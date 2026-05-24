@@ -26,7 +26,9 @@ export function TasksPage({ token, user }) {
 
   const F = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
-  // Load projects on mount
+  // FIX: use global user.role — member lookup was always returning undefined
+  const isAdmin = user?.role === "admin";
+
   useEffect(() => {
     api("/v1/projects", {}, token)
       .then((d) => {
@@ -37,7 +39,6 @@ export function TasksPage({ token, user }) {
       .catch((e) => toast(e.message, "error"));
   }, [token]);
 
-  // Load tasks whenever selected project changes
   const loadTasks = useCallback(async (proj) => {
     if (!proj) return;
     setLoading(true);
@@ -50,11 +51,6 @@ export function TasksPage({ token, user }) {
 
   useEffect(() => { loadTasks(selProject); }, [selProject, loadTasks]);
 
-  const isAdmin = selProject?.members?.find(
-    (m) => (m.user?._id || m.user) === (user?.id || user?._id)
-  )?.role === "admin";
-
-  // Group tasks by status for kanban columns
   const grouped = useMemo(() => {
     const g = { todo: [], in_progress: [], done: [] };
     tasks.forEach((t) => { (g[t.status] || g.todo).push(t); });
@@ -67,17 +63,12 @@ export function TasksPage({ token, user }) {
     try {
       const body = { ...form };
 
-      // FIX 1: Convert "YYYY-MM-DD" → full ISO string Zod expects
       if (!body.dueDate) {
         delete body.dueDate;
       } else {
         body.dueDate = new Date(body.dueDate).toISOString();
       }
-
-      // FIX 2: Remove empty assignedTo so backend doesn't get an empty string
       if (!body.assignedTo) delete body.assignedTo;
-
-      // FIX 3: Remove empty description so it doesn't fail optional field validation
       if (!body.description) delete body.description;
 
       const url = editing
@@ -119,7 +110,6 @@ export function TasksPage({ token, user }) {
       description: task.description || "",
       priority: task.priority,
       status: task.status,
-      // FIX 4: slice to YYYY-MM-DD for the date input field
       dueDate: task.dueDate ? task.dueDate.slice(0, 10) : "",
       assignedTo: task.assignedTo?._id || task.assignedTo || "",
     });
@@ -147,7 +137,6 @@ export function TasksPage({ token, user }) {
 
   return (
     <PagePad>
-      {/* Header row */}
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
         <PageHeader title="Tasks" noMargin />
         <select
@@ -169,7 +158,6 @@ export function TasksPage({ token, user }) {
         )}
       </div>
 
-      {/* Task form */}
       {showForm && (
         <Card style={{ borderColor: "rgba(91,124,250,.3)" }}>
           <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 14 }}>
@@ -198,7 +186,6 @@ export function TasksPage({ token, user }) {
                 <option value="in_progress">In Progress</option>
                 <option value="done">Done</option>
               </SelectInput>
-              {/* FIX 5: required so user can't submit without a date */}
               <TextInput
                 label="Due Date" type="date"
                 value={form.dueDate} onChange={F("dueDate")}
@@ -228,7 +215,6 @@ export function TasksPage({ token, user }) {
         </Card>
       )}
 
-      {/* Kanban board */}
       {loading
         ? <PageCenter><Spinner size={28} /></PageCenter>
         : (
